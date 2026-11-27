@@ -1,1 +1,29 @@
-# CI Workflow 
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "feature/**" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate-build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate project files
+        run: |
+          test -f app/index.html
+          test -f docker/Dockerfile
+          echo "Required files verified successfully."
+
+      - name: Build Docker image
+        run: docker build -f docker/Dockerfile -t lab07-web-app:ci .
+
+      - name: Run basic container test
+        run: |
+          docker run --rm lab07-web-app:ci nginx -t
+          docker run --rm lab07-web-app:ci cat /usr/share/nginx/html/index.html
